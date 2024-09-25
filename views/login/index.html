@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indústrias Wayne | Login</title>
+    <link rel="shortcut icon" href="/login/img/LOGO.png" type="image/x-icon">
+</head>
+<body>
+    <style>
+        
+        @import url('https://fonts.googleapis.com/css2?family=Jersey+10&family=New+Amsterdam&family=Teko:wght@300..700&display=swap');
+
+        body {
+            background-image: url('/login/img/BKGD.png');
+            background-attachment: fixed;
+            background-size: cover;
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            
+            font-family: "Teko", sans-serif;
+            font-optical-sizing: auto;
+            font-size: 1.4rem;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-container {
+            width: 400px;
+            padding: 20px;
+            background-color: #ddd9d9b4;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 12px;
+        }
+
+        h1 {
+            font-family: "Jersey 10", sans-serif;
+            font-weight: 400;
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-top: 12px;
+        }
+
+        input {
+            background-color: rgba(255, 255, 255, 0);
+            padding: 10px;
+            margin-top: 5px;
+            border-style: solid;
+            border-radius: 12px;
+            border-color: #181719;
+        }
+
+        button {
+            font-family: "Jersey 10";
+            font-weight: 400;
+            font-size: larger;
+            padding: 10px;
+            margin-top: 50px;
+            background-color: #181719;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+    </style>
+
+    <div class="login-container">
+        <h1>Login</h1>
+        <form method="post" id="login-form">
+            <label for="name">Nome:</label>
+            <input type="text" id="name" name="name" required>
+            <label for="password">Senha:</label>
+            <input type="password" id="password" name="password" required>
+            <button type="submit">Entrar</button>
+            <div id="error-message" style="color: red;"></div>
+        </form>
+    </div>
+
+    <script>
+
+        const loginForm = document.querySelector("#login-form");
+        const errorMessageDiv = document.querySelector("#error-message");
+    
+        document.addEventListener("DOMContentLoaded", () => {
+            loginForm.addEventListener("submit", async (event) => {
+                event.preventDefault();
+    
+                const name = loginForm.name.value;
+                const password = loginForm.password.value;
+    
+                try {
+                    const response = await fetch("/", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            name,
+                            password
+                        })
+                    });
+    
+                    if (response.ok) {
+                        window.location.href = "/dashboard/index.html";
+                    } else {
+                        errorMessageDiv.textContent = "Usuário ou senha incorretos.";
+                    }
+                } catch (error) {
+                    console.error(error);
+                    errorMessageDiv.textContent = "Ocorreu um erro. Tente novamente.";
+                }
+            });
+        });
+        
+    </script>
+
+</body>
+</html>

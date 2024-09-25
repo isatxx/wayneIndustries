@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indústrias Wayne | Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="/login/img/LOGO.png" type="image/x-icon">
+</head>
+<body>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jersey+10&family=New+Amsterdam&family=Teko:wght@300..700&display=swap');
+
+        body {
+            background-image: url('/login/img/BKGD.png');
+            background-attachment: fixed;
+            background-size: cover;
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            font-family: "Teko", sans-serif;
+            font-optical-sizing: auto;
+            font-size: 1.4rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .dashboard-container {
+            background-color: #ddd9d9b4;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 60vw;
+            padding: 40px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            max-height: 60vh;
+        }
+
+        h1 {
+            font-family: "Jersey 10", sans-serif;
+            font-weight: 400;
+            margin: 0;
+            margin-bottom: 12px;
+        }
+
+        .resource-form {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .resource-list {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            list-style-type: none;
+            padding: 0;
+            overflow-y: auto;
+            max-height: 40vh;
+        }
+
+        .resource-item {
+            background-color: #ececec60;
+            margin: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            flex: 0 1 calc(50% - 20px);
+            box-sizing: border-box;
+        }
+
+        .resource-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .title-amount {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .resource-container span {
+            font-size: 0.85em;
+        }
+
+        button {
+            background-color: #181719;
+            color: #fff;
+            cursor: pointer;
+            font-family: "Jersey 10";
+            font-weight: 400;
+            font-size: 1em;
+            padding: 0.5em;
+            border: none;
+            border-radius: 12px;
+            margin-top: 20px;
+            width: fit-content;
+        }
+
+        input {
+            font-family: "Teko", sans-serif;
+            font-size: 0.9em;
+            background-color: rgba(255, 255, 255, 0);
+            padding: 10px;
+            margin-top: 5px;
+            border-style: solid;
+            border-radius: 12px;
+            border-color: #181719;
+        }
+
+        input::placeholder {
+            color: #181719ce;
+            font-family: "Teko", sans-serif;
+            font-size: 0.9em;
+        }
+
+        #resourceAmount {
+            width: 50px;
+        }
+    </style>
+
+    <div class="dashboard-container">
+        <h1>Dashboard</h1>
+        <div class="resource-form">
+            <div class="resource-form-inputs">
+                <input type="text" id="resourceName" placeholder="Nome do Recurso" required>
+                <input type="text" id="resourceType" placeholder="Tipo de Recurso" required>
+                <input type="number" id="resourceAmount" placeholder="Qntd" min="1" required>
+            </div>
+            <button id="addResource">Adicionar Recurso</button>
+        </div>
+        <ul id="resourceList" class="resource-list"></ul>
+        <button id="logout">Sair</button>
+    </div>
+
+    <script>
+        async function fetchResources() {
+            try {
+                const response = await fetch("/resources");
+                if (!response.ok) {
+                    throw new Error('Erro ao buscar recursos: ' + response.statusText);
+                }
+                const resources = await response.json();
+
+                const resourceList = document.getElementById("resourceList");
+                resourceList.innerHTML = ""; // Limpa a lista antes de adicionar novos itens
+
+                resources.forEach(resource => {
+                    const listItem = document.createElement("li");
+                    listItem.className = "resource-item";
+                    listItem.innerHTML = `
+                    <div class="resource-container">
+                        <div class="title-amount">
+                            <span>Título: ${resource.title}</span>
+                            <span>Quantidade: ${resource.amount}</span>
+                        </div>
+                        <span>Categoria: ${resource.category}</span>
+                    </div>`;
+                    resourceList.appendChild(listItem);
+                });
+            } catch (error) {
+                console.error(error);
+                alert("Erro ao buscar recursos. Verifique o console para mais detalhes.");
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchResources(); // Chama a função para buscar os recursos ao carregar a página
+
+            document.getElementById("addResource").addEventListener("click", async () => {
+                const resourceName = document.getElementById("resourceName").value;
+                const resourceAmount = document.getElementById("resourceAmount").value;
+                const resourceType = document.getElementById("resourceType").value;
+
+                try {
+                    const response = await fetch("/resources", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            title: resourceName,
+                            amount: resourceAmount,
+                            category: resourceType
+                        })
+                    });
+
+                    if (response.ok) {
+                        await fetchResources(); // Atualiza a lista de recursos
+                        document.getElementById("resourceName").value = ''; // Limpa o campo
+                        document.getElementById("resourceAmount").value = 1; // Reseta a quantidade
+                        document.getElementById("resourceType").value = ''; // Limpa o campo
+                    } else {
+                        alert("Erro ao adicionar recurso. Verifique se você tem permissão.");
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert("Ocorreu um erro. Tente novamente.");
+                }
+            });
+
+            document.getElementById("logout").addEventListener("click", async () => {
+                try {
+                    const response = await fetch("/logout", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        }
+                    });
+
+                    if (response.ok) {
+                        window.location.href = "/"; // Redireciona para a página de login
+                    } else {
+                        alert("Erro ao fazer logout. Tente novamente.");
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert("Ocorreu um erro. Tente novamente.");
+                }
+            });
+        });
+    </script>
+</body>
+</html>
